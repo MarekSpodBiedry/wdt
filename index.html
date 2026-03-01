@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weekday Trainer</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              coal: {
+                950: "#0c0c0c",
+                900: "#111111",
+                800: "#161616",
+                700: "#1c1c1c",
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        font-family: "Manrope", sans-serif;
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-coal-950 text-gray-200 flex items-center justify-center min-h-screen px-4"
+  >
+    <div class="w-full max-w-2xl text-center space-y-12">
+      <div class="space-y-2">
+        <div
+          id="date"
+          class="text-4xl sm:text-5xl font-semibold tracking-tight"
+        ></div>
+        <div id="timer" class="text-sm text-gray-500 h-5"></div>
+      </div>
+
+      <div
+        id="buttons"
+        class="flex flex-col sm:flex-row gap-3 justify-center"
+      ></div>
+    </div>
+
+    <script>
+      const days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ];
+      const buttonsDiv = document.getElementById("buttons");
+      const dateDiv = document.getElementById("date");
+      const timerDiv = document.getElementById("timer");
+
+      const params = new URLSearchParams(window.location.search);
+      let startYear = parseInt(params.get("start")) || 2000;
+      let endYear = parseInt(params.get("end")) || 2026;
+
+      if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
+        startYear = 1900;
+        endYear = 2100;
+      }
+
+      let correctDayIndex;
+      let startTime;
+      let finished = false;
+
+      const baseClass =
+        "flex-1 px-4 py-3 rounded-xl transition font-medium text-gray-200";
+
+      const idleBg = "bg-coal-800 hover:bg-coal-700";
+      const correctBg = "bg-green-500 text-black";
+      const correctLightBg = "bg-green-300 text-black";
+      const wrongBg = "bg-red-500 text-black";
+
+      function randomDate() {
+        const start = new Date(startYear, 0, 1).getTime();
+        const end = new Date(endYear, 11, 31).getTime();
+        return new Date(start + Math.random() * (end - start));
+      }
+
+      function formatDate(date) {
+        return date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
+      }
+
+      function createButtons() {
+        days.forEach((day, i) => {
+          const btn = document.createElement("button");
+          btn.textContent = day;
+          btn.className = baseClass + " " + idleBg;
+          btn.dataset.index = i;
+          btn.onclick = () => handleAnswer(i);
+          buttonsDiv.appendChild(btn);
+        });
+      }
+
+      function setIdle(btn) {
+        btn.className = baseClass + " " + idleBg;
+      }
+
+      function setBg(btn, bgClass) {
+        btn.className = baseClass + " " + bgClass;
+      }
+
+      function newRound() {
+        finished = false;
+
+        document.querySelectorAll("button").forEach((btn) => {
+          setIdle(btn);
+        });
+
+        const date = randomDate();
+        correctDayIndex = (date.getDay() + 6) % 7;
+
+        dateDiv.textContent = formatDate(date);
+        timerDiv.textContent = " ";
+        startTime = performance.now();
+      }
+
+      function handleAnswer(index) {
+        if (finished) {
+          newRound();
+          return;
+        }
+
+        const buttons = document.querySelectorAll("button");
+        const correctBtn = buttons[correctDayIndex];
+        const clickedBtn = buttons[index];
+
+        const elapsedMs = performance.now() - startTime;
+
+        const minutes = Math.floor(elapsedMs / 60000);
+        const seconds = Math.floor((elapsedMs % 60000) / 1000);
+        const milliseconds = Math.floor(elapsedMs % 1000);
+
+        function pad(n, size) {
+          return n.toString().padStart(size, "0");
+        }
+
+        let formatted;
+
+        if (minutes > 0) {
+          formatted =
+            pad(minutes, 2) +
+            ":" +
+            pad(seconds, 2) +
+            "." +
+            pad(milliseconds, 3);
+        } else {
+          formatted = pad(seconds, 2) + "." + pad(milliseconds, 3);
+        }
+
+        timerDiv.textContent = formatted;
+
+        if (index === correctDayIndex) {
+          clickedBtn.classList.remove("bg-coal-800");
+          clickedBtn.classList.add(
+            "bg-green-500",
+            "hover:bg-green-600",
+            "text-black",
+          );
+        } else {
+          clickedBtn.classList.remove("bg-coal-800");
+          clickedBtn.classList.add(
+            "bg-red-500",
+            "hover:bg-red-600",
+            "text-black",
+          );
+
+          correctBtn.classList.remove("bg-coal-800");
+          correctBtn.classList.add(
+            "bg-green-300",
+            "hover:bg-green-400",
+            "text-black",
+          );
+        }
+
+        document.activeElement.blur();
+
+        finished = true;
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (!finished) {
+          const map = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6 };
+          if (map[e.key] !== undefined) {
+            handleAnswer(map[e.key]);
+          }
+        } else {
+          if (e.key === "Enter" || e.key === " ") {
+            newRound();
+          }
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (finished && !e.target.closest("button")) {
+          newRound();
+        }
+      });
+
+      createButtons();
+      newRound();
+    </script>
+  </body>
+</html>
