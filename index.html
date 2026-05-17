@@ -33,25 +33,563 @@
       body {
         font-family: "Manrope", sans-serif;
       }
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: #111111;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #1c1c1c;
+        border-radius: 3px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb:hover {
+        background: #2c2c2c;
+      }
     </style>
   </head>
 
   <body
-    class="bg-coal-950 text-gray-200 flex items-center justify-center min-h-screen px-4"
+    class="bg-coal-950 text-gray-200 flex items-center justify-center min-h-screen px-4 py-8"
   >
-    <div class="w-full max-w-2xl text-center space-y-12">
+    <div class="w-full max-w-4xl text-center space-y-8">
       <div class="space-y-2">
         <div
           id="date"
-          class="text-4xl sm:text-5xl font-semibold tracking-tight"
+          class="text-4xl sm:text-5xl font-semibold tracking-tight min-h-[3.5rem]"
         ></div>
-        <div id="timer" class="text-sm text-gray-500 h-5"></div>
+        <div id="timer" class="text-sm font-mono text-gray-500 h-5"></div>
       </div>
 
       <div
         id="buttons"
-        class="flex flex-col sm:flex-row gap-3 justify-center"
+        class="grid grid-cols-2 sm:grid-cols-7 gap-3 justify-center max-w-3xl mx-auto"
       ></div>
+
+      <div class="text-xs text-gray-500 flex flex-wrap gap-4 justify-center">
+        <span
+          ><kbd
+            class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
+            >H</kbd
+          >
+          Calculation</span
+        >
+        <span
+          ><kbd
+            class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
+            >T</kbd
+          >
+          Tutorial</span
+        >
+        <span
+          ><kbd
+            class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
+            >S</kbd
+          >
+          Stats & Data</span
+        >
+        <span
+          ><kbd
+            class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
+            >F</kbd
+          >
+          Formats</span
+        >
+        <span
+          ><kbd
+            class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
+            >R</kbd
+          >
+          Year Range</span
+        >
+      </div>
+
+      <div
+        id="range-panel"
+        class="hidden max-w-xl mx-auto bg-coal-900 border border-coal-700 rounded-2xl p-6 text-left shadow-2xl space-y-4"
+      >
+        <style>
+          #range-panel input[type="number"]::-webkit-outer-spin-button,
+          #range-panel input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: auto !important;
+            margin: 0;
+          }
+          #range-panel input[type="number"] {
+            -moz-appearance: number-input !important;
+            appearance: auto !important;
+          }
+        </style>
+
+        <div
+          class="flex justify-between items-center border-b border-coal-800 pb-3"
+        >
+          <h2 class="text-lg font-bold text-gray-100">
+            Set Trainer Target Range
+          </h2>
+          <button
+            onclick="toggleRangePanel()"
+            class="text-gray-500 hover:text-gray-300 text-sm"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >Start Year</label
+            >
+            <input
+              type="number"
+              id="range-start"
+              onkeydown="
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  applyRangeSettings();
+                }
+              "
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >End Year</label
+            >
+            <input
+              type="number"
+              id="range-end"
+              onkeydown="
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  applyRangeSettings();
+                }
+              "
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+        </div>
+
+        <button
+          onclick="applyRangeSettings()"
+          class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 font-bold text-black rounded-xl text-sm transition"
+        >
+          Apply Changes & Reload
+        </button>
+      </div>
+
+      <div
+        id="explanation-panel"
+        class="hidden max-w-xl mx-auto bg-coal-900 border border-coal-700 rounded-2xl p-6 text-left space-y-4 shadow-xl text-sm sm:text-base"
+      >
+        <h3
+          class="text-emerald-400 font-semibold tracking-wide uppercase text-xs"
+        >
+          Doomsday Calculation
+        </h3>
+        <div
+          id="explanation-content"
+          class="space-y-3 text-gray-400 leading-relaxed"
+        ></div>
+      </div>
+
+      <div
+        id="stats-panel"
+        class="hidden max-w-2xl mx-auto bg-coal-900 border border-coal-700 rounded-2xl p-6 text-left shadow-2xl space-y-6"
+      >
+        <div
+          class="flex justify-between items-center border-b border-coal-800 pb-3"
+        >
+          <h2 class="text-xl font-bold text-gray-100">
+            Performance Metrics & Data
+          </h2>
+          <button
+            onclick="toggleStats()"
+            class="text-gray-500 hover:text-gray-300 text-sm"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div class="bg-coal-950 p-3 rounded-xl border border-coal-800">
+            <div class="text-xs text-gray-500 uppercase">Total Rounds</div>
+            <div id="stat-total" class="text-xl font-bold text-gray-200 mt-1">
+              0
+            </div>
+          </div>
+          <div class="bg-coal-950 p-3 rounded-xl border border-coal-800">
+            <div class="text-xs text-gray-500 uppercase">
+              Avg Time (Correct)
+            </div>
+            <div id="stat-avg" class="text-xl font-bold text-gray-200 mt-1">
+              0.00s
+            </div>
+          </div>
+          <div class="bg-coal-950 p-3 rounded-xl border border-coal-800">
+            <div class="text-xs text-gray-500 uppercase">Accuracy</div>
+            <div
+              id="stat-accuracy"
+              class="text-xl font-bold text-gray-200 mt-1"
+            >
+              0%
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-semibold text-gray-400 mb-2">
+            Time Distribution (Seconds)
+          </h3>
+          <div
+            id="chart-wrapper"
+            class="bg-coal-950 p-4 rounded-xl border border-coal-800 h-40 flex items-end"
+          >
+            <div id="chart-empty-msg" class="text-xs text-gray-600 m-auto">
+              No solve metrics recorded yet.
+            </div>
+            <svg id="distribution-chart" class="w-full h-full hidden"></svg>
+          </div>
+        </div>
+
+        <div
+          class="flex flex-wrap gap-2 pt-2 border-t border-coal-800 justify-between items-center"
+        >
+          <div class="flex gap-2">
+            <button
+              onclick="exportData()"
+              class="px-3 py-1.5 bg-coal-800 hover:bg-coal-700 text-xs rounded-lg font-medium transition"
+            >
+              Export JSON
+            </button>
+            <button
+              onclick="document.getElementById('import-input').click()"
+              class="px-3 py-1.5 bg-coal-800 hover:bg-coal-700 text-xs rounded-lg font-medium transition"
+            >
+              Import JSON
+            </button>
+            <input
+              type="file"
+              id="import-input"
+              class="hidden"
+              accept=".json"
+              onchange="importData(event)"
+            />
+          </div>
+          <button
+            onclick="resetData()"
+            class="px-3 py-1.5 bg-red-950/40 text-red-400 hover:bg-red-900/40 border border-red-900/50 text-xs rounded-lg font-medium transition"
+          >
+            Reset Metrics
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="format-panel"
+        class="hidden max-w-xl mx-auto bg-coal-900 border border-coal-700 rounded-2xl p-6 text-left shadow-2xl space-y-4"
+      >
+        <div
+          class="flex justify-between items-center border-b border-coal-800 pb-3"
+        >
+          <h2 class="text-lg font-bold text-gray-100">
+            Date Formatting Preferences
+          </h2>
+          <button
+            onclick="toggleFormatPanel()"
+            class="text-gray-500 hover:text-gray-300 text-sm"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >Locale Region</label
+            >
+            <select
+              id="fmt-locale"
+              onchange="updateFormatSettings()"
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500 max-h-40"
+            >
+              <option value="pl-PL" selected>Polish (Poland) - pl-PL</option>
+              <option value="en-US">English (United States) - en-US</option>
+              <option value="en-GB">English (Great Britain) - en-GB</option>
+              <option value="de-DE">German (Germany) - de-DE</option>
+              <option value="fr-FR">French (France) - fr-FR</option>
+              <option value="es-ES">Spanish (Spain) - es-ES</option>
+              <option value="it-IT">Italian (Italy) - it-IT</option>
+              <option value="pt-BR">Portuguese (Brazil) - pt-BR</option>
+              <option value="ru-RU">Russian (Russia) - ru-RU</option>
+              <option value="ja-JP">Japanese (Japan) - ja-JP</option>
+              <option value="zh-CN">Chinese (China) - zh-CN</option>
+              <option value="ko-KR">Korean (South Korea) - ko-KR</option>
+              <option value="ar-SA">Arabic (Saudi Arabia) - ar-SA</option>
+              <option value="hi-IN">Hindi (India) - hi-IN</option>
+              <option value="nl-NL">Dutch (Netherlands) - nl-NL</option>
+              <option value="sv-SE">Swedish (Sweden) - sv-SE</option>
+              <option value="fi-FI">Finnish (Finland) - fi-FI</option>
+              <option value="no-NO">Norwegian (Norway) - no-NO</option>
+              <option value="da-DK">Danish (Denmark) - da-DK</option>
+              <option value="tr-TR">Turkish (Turkey) - tr-TR</option>
+              <option value="uk-UA">Ukrainian (Ukraine) - uk-UA</option>
+              <option value="cs-CZ">Czech (Czech Republic) - cs-CZ</option>
+              <option value="hu-HU">Hungarian (Hungary) - hu-HU</option>
+              <option value="ro-RO">Romanian (Romania) - ro-RO</option>
+              <option value="el-GR">Greek (Greece) - el-GR</option>
+              <option value="he-IL">Hebrew (Israel) - he-IL</option>
+              <option value="th-TH">Thai (Thailand) - th-TH</option>
+              <option value="id-ID">Indonesian (Indonesia) - id-ID</option>
+              <option value="vi-VN">Vietnamese (Vietnam) - vi-VN</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >Day Presentation</label
+            >
+            <select
+              id="fmt-day"
+              onchange="updateFormatSettings()"
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
+            >
+              <option value="2-digit" selected>2-digit (01-31)</option>
+              <option value="numeric">Numeric (1-31)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >Month Presentation</label
+            >
+            <select
+              id="fmt-month"
+              onchange="updateFormatSettings()"
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
+            >
+              <option value="long" selected>Long Text (e.g., January)</option>
+              <option value="short">Short Text (e.g., Jan)</option>
+              <option value="2-digit">2-digit (01-12)</option>
+              <option value="numeric">Numeric (1-12)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-xs text-gray-500 uppercase block"
+              >Year Presentation</label
+            >
+            <select
+              id="fmt-year"
+              onchange="updateFormatSettings()"
+              class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
+            >
+              <option value="numeric" selected>Numeric (e.g., 2026)</option>
+              <option value="2-digit">2-digit (e.g., 26)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="tutorial-panel"
+        class="hidden max-w-2xl mx-auto bg-coal-900 border border-coal-700 rounded-2xl p-6 text-left shadow-2xl space-y-6"
+      >
+        <div
+          class="flex justify-between items-center border-b border-coal-800 pb-3"
+        >
+          <h2 class="text-xl font-bold text-gray-100">
+            The Doomsday Method Blueprint
+          </h2>
+          <button
+            onclick="toggleTutorial()"
+            class="text-gray-500 hover:text-gray-300 text-sm"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div
+          class="max-h-[60vh] overflow-y-auto pr-2 custom-scroll space-y-6 text-sm text-gray-400 leading-relaxed"
+        >
+          <div>
+            <h3 class="text-gray-200 font-semibold mb-2">0. Core Concept</h3>
+            <p>
+              Every year maps an anchor weekday called its
+              <strong>Doomsday</strong>. Weekdays translate directly to
+              numerical indices:
+              <code class="text-gray-300 font-mono"
+                >Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6</code
+              >.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="text-gray-200 font-semibold mb-2">
+              1. Century Anchors (The 0-5-3-2 Mapping)
+            </h3>
+            <p class="mb-3">
+              Century anchors follow a straightforward timeline sequence of
+              <strong>0, 5, 3, 2</strong> that loops indefinitely every 400
+              years:
+            </p>
+            <table
+              class="w-full text-left bg-coal-950 rounded-lg p-2 border border-coal-800 text-xs sm:text-sm"
+            >
+              <thead>
+                <tr class="border-b border-coal-800 text-gray-300">
+                  <th class="p-2">Century</th>
+                  <th class="p-2">Anchor Day</th>
+                  <th class="p-2 font-mono">Key Value</th>
+                  <th class="p-2">Logical Anchor Rule</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-coal-800">
+                  <td class="p-2 font-mono">1700s</td>
+                  <td class="p-2">Sunday</td>
+                  <td class="p-2 font-mono text-gray-200">0</td>
+                  <td class="p-2 text-xs">The index starts at 0</td>
+                </tr>
+                <tr class="border-b border-coal-800">
+                  <td class="p-2 font-mono">1800s</td>
+                  <td class="p-2">Friday</td>
+                  <td class="p-2 font-mono text-gray-200">5</td>
+                  <td class="p-2 text-xs">Steps to 5</td>
+                </tr>
+                <tr class="border-b border-coal-800">
+                  <td class="p-2 font-mono">1900s</td>
+                  <td class="p-2">Wednesday</td>
+                  <td class="p-2 font-mono text-gray-200">3</td>
+                  <td class="p-2 text-xs">Steps to 3</td>
+                </tr>
+                <tr
+                  class="border-b border-coal-800 bg-coal-900/60 font-semibold"
+                >
+                  <td class="p-2 font-mono text-emerald-400">2000s</td>
+                  <td class="p-2 text-emerald-400">Tuesday</td>
+                  <td class="p-2 font-mono text-emerald-400">2</td>
+                  <td class="p-2 text-xs text-gray-400">
+                    Current Century is locked to 2 ("Y2K Tuesday")
+                  </td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-mono text-gray-600">2100s</td>
+                  <td class="p-2 text-gray-600">Sunday</td>
+                  <td class="p-2 font-mono text-gray-600">0</td>
+                  <td class="p-2 text-xs text-gray-600">
+                    The 0-5-3-2 map loop resets completely
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3 class="text-gray-200 font-semibold mb-2">
+              2. Year Contribution Calculation
+            </h3>
+            <p>
+              Take the last two digits of the year (<code class="text-gray-300"
+                >YY</code
+              >) and execute the standard algorithm:
+            </p>
+            <ol class="list-decimal pl-5 space-y-1">
+              <li>
+                Divide <code class="text-gray-300">YY</code> by 12 to find
+                <strong class="text-gray-300">a</strong> (the quotient).
+              </li>
+              <li>
+                Find the remainder of that division,
+                <strong class="text-gray-300">b</strong>.
+              </li>
+              <li>
+                Divide <code class="text-gray-300">b</code> by 4 to get
+                <strong class="text-gray-300">c</strong> (drop decimals).
+              </li>
+              <li>
+                Add
+                <code class="text-gray-300">Century Anchor + a + b + c</code>.
+                Simplify this sum <code class="text-gray-300">mod 7</code> to
+                track your final localized Year Doomsday.
+              </li>
+            </ol>
+          </div>
+
+          <div>
+            <h3 class="text-gray-200 font-semibold mb-2">
+              3. Fixed Month Anchors
+            </h3>
+            <p>These benchmark days always fall directly on Doomsday:</p>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>
+                <strong>Even Months: </strong> 4/4, 6/6, 8/8, 10/10, 12/12.
+              </li>
+              <li>
+                <strong>"I work 9-to-5 at the 7-11": </strong> 5/9, 9/5, 7/11,
+                11/7.
+              </li>
+              <li><strong>March: </strong> "Pi Day" (March 14).</li>
+              <li>
+                <strong>January / February (The Leap Year Shifters): </strong>
+                <br />&bull; Common Year: Jan 3, Feb 28. <br />&bull; Leap Year:
+                Jan 4, Feb 29.
+              </li>
+            </ul>
+          </div>
+
+          <div
+            class="p-4 bg-coal-950 rounded-xl border border-coal-800 text-xs text-gray-500 space-y-3"
+          >
+            <div>
+              <strong class="text-gray-400 block mb-1"
+                >Historical Calendar Shifts (Julian vs. Gregorian)</strong
+              >
+              The code's validation pipeline tracks the exact date boundaries
+              where calendar lines fractured. To mentally calculate these target
+              blocks, apply these region-specific manual adjustments:
+            </div>
+
+            <div class="space-y-2 border-t border-coal-900 pt-2">
+              <p>
+                <strong class="text-gray-400"
+                  >&bull; The Standard 1582 Cutoff (Catholic Europe):</strong
+                >
+                <br />
+                The Julian calendar ended on
+                <strong>Thursday, October 4, 1582</strong>. The next morning
+                skipped 10 days forward directly into the Gregorian calendar on
+                <strong>Friday, October 15, 1582</strong>.
+                <span class="text-gray-600 block mt-0.5"
+                  >Calculation step: For any year before this break, every
+                  single year divisible by 4 is a leap year (including 1500,
+                  1400, etc.). The century anchor value decreases by 1 day index
+                  every 100 years you move backward.</span
+                >
+              </p>
+
+              <p>
+                <strong class="text-gray-400"
+                  >&bull; The 1752 Split (British Empire & American
+                  Colonies):</strong
+                >
+                <br />
+                Great Britain and its global territories maintained the Julian
+                system until <strong>Wednesday, September 2, 1752</strong>. The
+                following dawn skipped 11 calendar dates to reset on
+                <strong>Thursday, September 14, 1752</strong>.
+                <span class="text-gray-600 block mt-0.5"
+                  >Calculation step: Dates falling between October 15, 1582, and
+                  September 2, 1752, are calculated using old-style Julian leap
+                  rules if simulating British records. To sync a Julian date to
+                  the 0-5-3-2 Gregorian loop matrix, add the calendar gap
+                  manually to your target date index (+10 days in the 1600s; +11
+                  days in the 1700s) before reducing mod 7.</span
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -64,30 +602,61 @@
         "Saturday",
         "Sunday",
       ];
+      const dayMapString = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+
       const buttonsDiv = document.getElementById("buttons");
       const dateDiv = document.getElementById("date");
       const timerDiv = document.getElementById("timer");
+      const explanationPanel = document.getElementById("explanation-panel");
+      const explanationContent = document.getElementById("explanation-content");
+      const tutorialPanel = document.getElementById("tutorial-panel");
+      const statsPanel = document.getElementById("stats-panel");
 
       const params = new URLSearchParams(window.location.search);
       let startYear = parseInt(params.get("start")) || 2000;
       let endYear = parseInt(params.get("end")) || 2026;
 
       if (isNaN(startYear) || isNaN(endYear) || startYear > endYear) {
-        startYear = 1900;
-        endYear = 2100;
+        startYear = 2000;
+        endYear = 2026;
       }
 
-      let correctDayIndex;
-      let startTime;
-      let finished = false;
+      let correctDayIndex,
+        startTime,
+        finished = false,
+        currentRandomDate = null;
+      let showExplanationExplicitly = false,
+        showTutorial = false,
+        showStats = false,
+        showFormatPanel = false,
+        showRangePanel = false;
+
+      let isFirstRound = true;
+
+      let formatConfig = JSON.parse(
+        localStorage.getItem("doomsday_trainer_format"),
+      ) || {
+        locale: "pl-PL",
+        options: { day: "2-digit", month: "long", year: "numeric" },
+      };
+
+      let historyData =
+        JSON.parse(localStorage.getItem("doomsday_trainer_history")) || [];
 
       const baseClass =
-        "flex-1 px-4 py-3 rounded-xl transition font-medium text-gray-200";
-
+        "px-2 py-3 rounded-xl transition font-medium text-center truncate select-none text-gray-200";
       const idleBg = "bg-coal-800 hover:bg-coal-700";
-      const correctBg = "bg-green-500 text-black";
-      const correctLightBg = "bg-green-300 text-black";
-      const wrongBg = "bg-red-500 text-black";
+      const correctBg = "bg-green-500 text-black hover:bg-green-600";
+      const correctLightBg = "bg-green-300 text-black hover:bg-green-400";
+      const wrongBg = "bg-red-500 text-black hover:bg-red-600";
 
       function randomDate() {
         const start = new Date(startYear, 0, 1).getTime();
@@ -96,45 +665,343 @@
       }
 
       function formatDate(date) {
-        return date.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
+        return date.toLocaleDateString(
+          formatConfig.locale,
+          formatConfig.options,
+        );
+      }
+
+      function initFormatDropdowns() {
+        document.getElementById("fmt-locale").value = formatConfig.locale;
+        document.getElementById("fmt-day").value = formatConfig.options.day;
+        document.getElementById("fmt-month").value = formatConfig.options.month;
+        document.getElementById("fmt-year").value = formatConfig.options.year;
+      }
+
+      function updateFormatSettings() {
+        formatConfig.locale = document.getElementById("fmt-locale").value;
+        formatConfig.options = {
+          day: document.getElementById("fmt-day").value,
+          month: document.getElementById("fmt-month").value,
+          year: document.getElementById("fmt-year").value,
+        };
+        localStorage.setItem(
+          "doomsday_trainer_format",
+          JSON.stringify(formatConfig),
+        );
+
+        if (currentRandomDate && !isFirstRound) {
+          dateDiv.textContent = formatDate(currentRandomDate);
+        }
+      }
+
+      function toggleFormatPanel() {
+        showFormatPanel = !showFormatPanel;
+        document
+          .getElementById("format-panel")
+          .classList.toggle("hidden", !showFormatPanel);
+        if (showFormatPanel) {
+          showTutorial = false;
+          showStats = false;
+          showRangePanel = false;
+          tutorialPanel.classList.add("hidden");
+          statsPanel.classList.add("hidden");
+          document.getElementById("range-panel").classList.add("hidden");
+        }
+      }
+
+      function toggleRangePanel() {
+        showRangePanel = !showRangePanel;
+        document
+          .getElementById("range-panel")
+          .classList.toggle("hidden", !showRangePanel);
+        if (showRangePanel) {
+          document.getElementById("range-start").value = startYear;
+          document.getElementById("range-end").value = endYear;
+          showTutorial = false;
+          showStats = false;
+          showFormatPanel = false;
+          tutorialPanel.classList.add("hidden");
+          statsPanel.classList.add("hidden");
+          document.getElementById("format-panel").classList.add("hidden");
+        }
+      }
+
+      function applyRangeSettings() {
+        const s = parseInt(document.getElementById("range-start").value);
+        const e = parseInt(document.getElementById("range-end").value);
+        if (!isNaN(s) && !isNaN(e) && s <= e) {
+          window.location.search = `?start=${s}&end=${e}`;
+        } else {
+          alert("Invalid entry limits constraint.");
+        }
+      }
+
+      function newRound() {
+        if (isFirstRound) {
+          finished = true;
+          dateDiv.innerHTML = `
+      <button onclick="isFirstRound=false; newRound();" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-black text-xl font-bold rounded-xl transition shadow-lg transform hover:scale-105 select-none">
+        Start Session
+      </button>
+    `;
+          timerDiv.textContent = "Press Space, Enter, or Click to Start";
+          return;
+        }
+
+        finished = false;
+        showExplanationExplicitly = false;
+        updateExplanationVisibility();
+
+        document.querySelectorAll("#buttons button").forEach((btn) => {
+          setBg(btn, idleBg);
         });
+
+        currentRandomDate = randomDate();
+        correctDayIndex = (currentRandomDate.getDay() + 6) % 7;
+
+        dateDiv.textContent = formatDate(currentRandomDate);
+        explanationContent.innerHTML = generateExplanation(currentRandomDate);
+        timerDiv.textContent = " ";
+        startTime = performance.now();
       }
 
       function createButtons() {
         days.forEach((day, i) => {
           const btn = document.createElement("button");
           btn.textContent = day;
-          btn.className = baseClass + " " + idleBg;
-          btn.dataset.index = i;
+          btn.className = `${baseClass} ${idleBg}`;
           btn.onclick = () => handleAnswer(i);
           buttonsDiv.appendChild(btn);
         });
       }
 
-      function setIdle(btn) {
-        btn.className = baseClass + " " + idleBg;
-      }
-
       function setBg(btn, bgClass) {
-        btn.className = baseClass + " " + bgClass;
+        btn.className = `${baseClass} ${bgClass}`;
       }
 
-      function newRound() {
-        finished = false;
+      function isLeapYear(year) {
+        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      }
 
-        document.querySelectorAll("button").forEach((btn) => {
-          setIdle(btn);
+      function generateExplanation(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const leap = isLeapYear(year);
+        const century = Math.floor(year / 100) * 100;
+
+        let centuryAnchor;
+        if (century % 400 === 0) centuryAnchor = 2;
+        else if (century % 400 === 100) centuryAnchor = 0;
+        else if (century % 400 === 200) centuryAnchor = 5;
+        else centuryAnchor = 3;
+
+        const YY = year % 100;
+        const a = Math.floor(YY / 12);
+        const b = YY % 12;
+        const c = Math.floor(b / 4);
+        const yearDoomsdayValue = (centuryAnchor + a + b + c) % 7;
+
+        const monthAnchors = {
+          1: leap ? 4 : 3,
+          2: leap ? 29 : 28,
+          3: 14,
+          4: 4,
+          5: 9,
+          6: 6,
+          7: 11,
+          8: 8,
+          9: 5,
+          10: 10,
+          11: 7,
+          12: 12,
+        };
+        const monthAnchorDay = monthAnchors[month];
+        const dayDiff = day - monthAnchorDay;
+        let finalValue = (yearDoomsdayValue + dayDiff) % 7;
+        if (finalValue < 0) finalValue += 7;
+
+        return `
+          <p><strong>1. Century Selection:</strong> ${century}s follows the timeline sequence mapping value to <strong>${centuryAnchor} (${dayMapString[centuryAnchor]})</strong>.</p>
+          <p><strong>2. Year Formula (YY = ${YY}):</strong><br>
+             &bull; 12 goes into ${YY} &rarr; <strong>${a}</strong> times with a remainder of <strong>${b}</strong>.<br>
+             &bull; ${b} / 4 leap intervals = <strong>${c}</strong>.<br>
+             &bull; Year Baseline: (${centuryAnchor} + ${a} + ${b} + ${c}) mod 7 = <strong>${yearDoomsdayValue} (${dayMapString[yearDoomsdayValue]})</strong>.</p>
+          <p><strong>3. Target Month Offset:</strong><br>
+             &bull; The ${date.toLocaleDateString("en-GB", { month: "long" })} benchmark target anchor is the <strong>${monthAnchorDay}th</strong>.<br>
+             &bull; Gap: ${day} - ${monthAnchorDay} = <strong>${dayDiff}</strong> day step index.</p>
+          <p class="pt-2 border-t border-coal-800 text-base text-gray-300">
+             <strong>Formula Result:</strong> (${yearDoomsdayValue} + ${dayDiff}) mod 7 = <strong>${finalValue} (${dayMapString[finalValue]})</strong>.
+          </p>
+        `;
+      }
+
+      function updateExplanationVisibility() {
+        if (showExplanationExplicitly) {
+          explanationPanel.classList.remove("hidden");
+        } else {
+          explanationPanel.classList.add("hidden");
+        }
+      }
+
+      function toggleTutorial() {
+        showTutorial = !showTutorial;
+        tutorialPanel.classList.toggle("hidden", !showTutorial);
+        if (showTutorial) {
+          showStats = false;
+          statsPanel.classList.add("hidden");
+        }
+      }
+
+      function toggleStats() {
+        showStats = !showStats;
+        statsPanel.classList.toggle("hidden", !showStats);
+        if (showStats) {
+          showTutorial = false;
+          tutorialPanel.classList.add("hidden");
+          renderStatsAndChart();
+        }
+      }
+
+      function renderStatsAndChart() {
+        const total = historyData.length;
+        document.getElementById("stat-total").textContent = total;
+
+        const correctSolves = historyData.filter((d) => d.correct);
+        const accuracy =
+          total > 0 ? Math.round((correctSolves.length / total) * 100) : 0;
+        document.getElementById("stat-accuracy").textContent = `${accuracy}%`;
+
+        if (correctSolves.length === 0) {
+          document.getElementById("stat-avg").textContent = "0.00s";
+          document.getElementById("chart-empty-msg").classList.remove("hidden");
+          document.getElementById("distribution-chart").classList.add("hidden");
+          return;
+        }
+
+        const avgTime =
+          correctSolves.reduce((sum, d) => sum + d.time, 0) /
+          correctSolves.length;
+        document.getElementById("stat-avg").textContent =
+          `${(avgTime / 1000).toFixed(2)}s`;
+
+        document.getElementById("chart-empty-msg").classList.add("hidden");
+        const svg = document.getElementById("distribution-chart");
+        svg.classList.remove("hidden");
+        svg.innerHTML = "";
+
+        const buckets = [0, 0, 0, 0, 0, 0];
+        const labels = ["0-3s", "3-6s", "6-9s", "9-12s", "12-15s", "15s+"];
+
+        correctSolves.forEach((s) => {
+          const sec = s.time / 1000;
+          if (sec < 3) buckets[0]++;
+          else if (sec < 6) buckets[1]++;
+          else if (sec < 9) buckets[2]++;
+          else if (sec < 12) buckets[3]++;
+          else if (sec < 15) buckets[4]++;
+          else buckets[5]++;
         });
 
-        const date = randomDate();
-        correctDayIndex = (date.getDay() + 6) % 7;
+        const maxCount = Math.max(...buckets);
+        const svgWidth = svg.clientWidth || 500;
+        const svgHeight = 120;
+        svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
 
-        dateDiv.textContent = formatDate(date);
-        timerDiv.textContent = " ";
-        startTime = performance.now();
+        const barWidth = (svgWidth / buckets.length) * 0.85;
+        const gap = (svgWidth / buckets.length) * 0.15;
+
+        buckets.forEach((count, idx) => {
+          const maxBarHeight = 80;
+          const barHeight =
+            maxCount > 0 ? (count / maxCount) * maxBarHeight : 0;
+
+          const x = idx * (barWidth + gap) + gap / 2;
+          const y = svgHeight - 25 - barHeight;
+
+          const rect = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "rect",
+          );
+          rect.setAttribute("x", x);
+          rect.setAttribute("y", y);
+          rect.setAttribute("width", barWidth);
+          rect.setAttribute("height", barHeight);
+          rect.setAttribute("fill", "#10b981");
+          rect.setAttribute("rx", "4");
+          svg.appendChild(rect);
+
+          if (count > 0) {
+            const valText = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "text",
+            );
+            valText.setAttribute("x", x + barWidth / 2);
+            valText.setAttribute("y", y - 8);
+            valText.setAttribute("fill", "#9ca3af");
+            valText.setAttribute("font-size", "10");
+            valText.setAttribute("text-anchor", "middle");
+            valText.textContent = count;
+            svg.appendChild(valText);
+          }
+
+          const txt = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text",
+          );
+          txt.setAttribute("x", x + barWidth / 2);
+          txt.setAttribute("y", svgHeight - 4);
+          txt.setAttribute("fill", "#6b7280");
+          txt.setAttribute("font-size", "10");
+          txt.setAttribute("text-anchor", "middle");
+          txt.textContent = labels[idx];
+          svg.appendChild(txt);
+        });
+      }
+
+      function exportData() {
+        const blob = new Blob([JSON.stringify(historyData, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `doomsday_stats_${new Date().toISOString().split("T")[0]}.json`;
+        a.click();
+      }
+
+      function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            if (Array.isArray(parsed)) {
+              historyData = parsed;
+              localStorage.setItem(
+                "doomsday_trainer_history",
+                JSON.stringify(historyData),
+              );
+              renderStatsAndChart();
+              alert("Data metrics synced successfully.");
+            }
+          } catch (err) {
+            alert("Error: Bad JSON format layout structure.");
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function resetData() {
+        if (
+          confirm("Permanently wipe your local historical accuracy records?")
+        ) {
+          historyData = [];
+          localStorage.removeItem("doomsday_trainer_history");
+          renderStatsAndChart();
+        }
       }
 
       function handleAnswer(index) {
@@ -143,12 +1010,11 @@
           return;
         }
 
-        const buttons = document.querySelectorAll("button");
+        const buttons = document.querySelectorAll("#buttons button");
         const correctBtn = buttons[correctDayIndex];
         const clickedBtn = buttons[index];
 
         const elapsedMs = performance.now() - startTime;
-
         const minutes = Math.floor(elapsedMs / 60000);
         const seconds = Math.floor((elapsedMs % 60000) / 1000);
         const milliseconds = Math.floor(elapsedMs % 1000);
@@ -157,69 +1023,100 @@
           return n.toString().padStart(size, "0");
         }
 
-        let formatted;
-
-        if (minutes > 0) {
-          formatted =
-            pad(minutes, 2) +
-            ":" +
-            pad(seconds, 2) +
-            "." +
-            pad(milliseconds, 3);
-        } else {
-          formatted = pad(seconds, 2) + "." + pad(milliseconds, 3);
-        }
+        let formatted =
+          minutes > 0
+            ? `${pad(minutes, 2)}:${pad(seconds, 2)}.${pad(milliseconds, 3)}`
+            : `${seconds}.${pad(milliseconds, 3)}s`;
 
         timerDiv.textContent = formatted;
 
-        if (index === correctDayIndex) {
-          clickedBtn.classList.remove("bg-coal-800");
-          clickedBtn.classList.add(
-            "bg-green-500",
-            "hover:bg-green-600",
-            "text-black",
-          );
-        } else {
-          clickedBtn.classList.remove("bg-coal-800");
-          clickedBtn.classList.add(
-            "bg-red-500",
-            "hover:bg-red-600",
-            "text-black",
-          );
+        const isCorrect = index === correctDayIndex;
 
-          correctBtn.classList.remove("bg-coal-800");
-          correctBtn.classList.add(
-            "bg-green-300",
-            "hover:bg-green-400",
-            "text-black",
-          );
+        if (isCorrect) {
+          setBg(clickedBtn, correctBg);
+        } else {
+          setBg(clickedBtn, wrongBg);
+          setBg(correctBtn, correctLightBg);
         }
 
-        document.activeElement.blur();
+        historyData.push({
+          date: currentRandomDate.toISOString(),
+          time: elapsedMs,
+          correct: isCorrect,
+        });
+        localStorage.setItem(
+          "doomsday_trainer_history",
+          JSON.stringify(historyData),
+        );
+
+        if (showStats) {
+          renderStatsAndChart();
+        }
+
+        if (document.activeElement) {
+          document.activeElement.blur();
+        }
 
         finished = true;
       }
 
       document.addEventListener("keydown", (e) => {
+        const activeTag = document.activeElement
+          ? document.activeElement.tagName.toLowerCase()
+          : "";
+        if (
+          activeTag === "input" ||
+          activeTag === "select" ||
+          activeTag === "textarea"
+        ) {
+          return;
+        }
+
+        if (e.key === "h" || e.key === "H") {
+          showExplanationExplicitly = !showExplanationExplicitly;
+          updateExplanationVisibility();
+          return;
+        }
+        if (e.key === "t" || e.key === "T") {
+          toggleTutorial();
+          return;
+        }
+        if (e.key === "s" || e.key === "S") {
+          toggleStats();
+          return;
+        }
+        if (e.key === "f" || e.key === "F") {
+          toggleFormatPanel();
+          return;
+        }
+        if (e.key === "r" || e.key === "R") {
+          toggleRangePanel();
+          return;
+        }
+
+        if (isFirstRound) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            isFirstRound = false;
+            newRound();
+          }
+          return;
+        }
+
         if (!finished) {
-          const map = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6 };
+          const map = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 0: 6 };
           if (map[e.key] !== undefined) {
             handleAnswer(map[e.key]);
           }
         } else {
           if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
             newRound();
           }
         }
       });
-
-      document.addEventListener("click", (e) => {
-        if (finished && !e.target.closest("button")) {
-          newRound();
-        }
-      });
-
       createButtons();
+      initFormatDropdowns();
       newRound();
     </script>
   </body>
