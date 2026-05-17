@@ -70,7 +70,7 @@
         <span
           ><kbd
             class="px-1 bg-coal-900 border border-coal-700 rounded text-gray-400"
-            >H</kbd
+            >C</kbd
           >
           Calculation</span
         >
@@ -140,6 +140,7 @@
               >Start Year</label
             >
             <input
+              placeholder="2000"
               type="number"
               id="range-start"
               onkeydown="
@@ -156,6 +157,7 @@
               >End Year</label
             >
             <input
+              placeholder="2026"
               type="number"
               id="range-end"
               onkeydown="
@@ -375,16 +377,20 @@
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs text-gray-500 uppercase block"
-              >Year Presentation</label
-            >
+            <label class="text-xs text-gray-500 uppercase block">
+              Calendar System (COMING SOON)
+            </label>
             <select
-              id="fmt-year"
-              onchange="updateFormatSettings()"
+              id="fmt-calendar"
+              onchange=""
               class="w-full bg-coal-950 border border-coal-800 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:border-emerald-500"
             >
-              <option value="numeric" selected>Numeric (e.g., 2026)</option>
-              <option value="2-digit">2-digit (e.g., 26)</option>
+              <option value="gregorian" selected>Gregorian (Proleptic)</option>
+              <option value="europe" disabled>Historical Europe (1582)</option>
+              <option value="britain" disabled>
+                Historical Britain (1752)
+              </option>
+              <option value="julian" disabled>Julian</option>
             </select>
           </div>
         </div>
@@ -538,54 +544,121 @@
           </div>
 
           <div
-            class="p-4 bg-coal-950 rounded-xl border border-coal-800 text-xs text-gray-500 space-y-3"
+            class="p-4 bg-coal-950 rounded-xl border border-coal-800 text-xs text-gray-500 space-y-5"
           >
             <div>
-              <strong class="text-gray-400 block mb-1"
-                >Historical Calendar Shifts (Julian vs. Gregorian)</strong
-              >
-              The code's validation pipeline tracks the exact date boundaries
-              where calendar lines fractured. To mentally calculate these target
-              blocks, apply these region-specific manual adjustments:
+              <strong class="text-gray-300 block mb-2 text-sm">
+                Historical Calendar Modes (COMING SOON)
+              </strong>
             </div>
 
-            <div class="space-y-2 border-t border-coal-900 pt-2">
-              <p>
-                <strong class="text-gray-400"
-                  >&bull; The Standard 1582 Cutoff (Catholic Europe):</strong
-                >
-                <br />
-                The Julian calendar ended on
-                <strong>Thursday, October 4, 1582</strong>. The next morning
-                skipped 10 days forward directly into the Gregorian calendar on
-                <strong>Friday, October 15, 1582</strong>.
-                <span class="text-gray-600 block mt-0.5"
-                  >Calculation step: For any year before this break, every
-                  single year divisible by 4 is a leap year (including 1500,
-                  1400, etc.). The century anchor value decreases by 1 day index
-                  every 100 years you move backward.</span
-                >
-              </p>
+            <div class="border-t border-coal-900 pt-4 space-y-4">
+              <div>
+                <strong class="text-gray-300 block mb-1">
+                  1. Gregorian (Proleptic)
+                </strong>
 
-              <p>
-                <strong class="text-gray-400"
-                  >&bull; The 1752 Split (British Empire & American
-                  Colonies):</strong
-                >
-                <br />
-                Great Britain and its global territories maintained the Julian
-                system until <strong>Wednesday, September 2, 1752</strong>. The
-                following dawn skipped 11 calendar dates to reset on
-                <strong>Thursday, September 14, 1752</strong>.
-                <span class="text-gray-600 block mt-0.5"
-                  >Calculation step: Dates falling between October 15, 1582, and
-                  September 2, 1752, are calculated using old-style Julian leap
-                  rules if simulating British records. To sync a Julian date to
-                  the 0-5-3-2 Gregorian loop matrix, add the calendar gap
-                  manually to your target date index (+10 days in the 1600s; +11
-                  days in the 1700s) before reducing mod 7.</span
-                >
-              </p>
+                <p>
+                  This mode uses the modern Gregorian calendar for all years,
+                  including historical dates before 1582 - its creation.
+                </p>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Leap Rule:</strong>
+                  Every 4th year is leap, except centuries not divisible by 400.
+                </div>
+
+                <div class="mt-1 text-gray-600">
+                  <strong class="text-gray-500">Century Pattern:</strong>
+                  The repeating 0-5-3-2 anchor cycle.
+                </div>
+              </div>
+
+              <div>
+                <strong class="text-gray-300 block mb-1">
+                  2. Historical Europe (1582 Reform)
+                </strong>
+
+                <p>
+                  Continental Catholic Europe switched from the Julian calendar
+                  to the Gregorian calendar in October 1582.
+                </p>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Calendar Split:</strong>
+                  <br />
+                  Julian calendar: up to Thursday, October 4, 1582.
+                  <br />
+                  Gregorian calendar: beginning Friday, October 15, 1582.
+                </div>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Missing Dates:</strong>
+                  October 5-14, 1582 never existed.
+                </div>
+              </div>
+
+              <div>
+                <strong class="text-gray-300 block mb-1">
+                  3. Historical Britain (1752 Reform)
+                </strong>
+
+                <p>
+                  Britain and the American colonies remained on the Julian
+                  calendar much longer than continental Europe.
+                </p>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Calendar Split:</strong>
+                  <br />
+                  Julian calendar: up to Wednesday, September 2, 1752.
+                  <br />
+                  Gregorian calendar: beginning Thursday, September 14, 1752.
+                </div>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Missing Dates:</strong>
+                  September 3-13, 1752 never existed.
+                </div>
+              </div>
+
+              <div>
+                <strong class="text-gray-300 block mb-1"> 4. Julian </strong>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Julian Leap Rule:</strong>
+                  Every year divisible by 4 is leap.
+                </div>
+
+                <div class="mt-2 text-gray-600">
+                  <strong class="text-gray-500">Julian Century Anchors:</strong>
+                  Julian century anchors move backward by 1 weekday every
+                  century. A simple mental sequence is: 1600s → 6 (Saturday)<br />
+                  1700s → 5 (Friday)<br />
+                  1800s → 4 (Thursday)<br />
+                  1900s → 3 (Wednesday)<br />
+                  2000s → 2 (Tuesday) The cycle continues backward mod 7.
+                </div>
+              </div>
+
+              <div class="border-t border-coal-900 pt-4">
+                <strong class="text-gray-300 block mb-2">
+                  Mental Calculation Notes
+                </strong>
+
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>
+                    Gregorian dates use the standard modern 0-5-3-2
+                    century-anchor cycle.
+                  </li>
+
+                  <li>
+                    Julian dates use different century anchors because the
+                    Julian calendar overcounts leap years compared to Gregorian
+                    rules.
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -644,8 +717,8 @@
       let formatConfig = JSON.parse(
         localStorage.getItem("doomsday_trainer_format"),
       ) || {
-        locale: "pl-PL",
-        options: { day: "2-digit", month: "long", year: "numeric" },
+        locale: "en-GB",
+        options: { day: "2-digit", month: "long" },
       };
 
       let historyData =
@@ -665,17 +738,16 @@
       }
 
       function formatDate(date) {
-        return date.toLocaleDateString(
-          formatConfig.locale,
-          formatConfig.options,
-        );
+        const runtimeOptions = Object.assign({}, formatConfig.options, {
+          year: "numeric",
+        });
+        return date.toLocaleDateString(formatConfig.locale, runtimeOptions);
       }
 
       function initFormatDropdowns() {
         document.getElementById("fmt-locale").value = formatConfig.locale;
         document.getElementById("fmt-day").value = formatConfig.options.day;
         document.getElementById("fmt-month").value = formatConfig.options.month;
-        document.getElementById("fmt-year").value = formatConfig.options.year;
       }
 
       function updateFormatSettings() {
@@ -683,7 +755,6 @@
         formatConfig.options = {
           day: document.getElementById("fmt-day").value,
           month: document.getElementById("fmt-month").value,
-          year: document.getElementById("fmt-year").value,
         };
         localStorage.setItem(
           "doomsday_trainer_format",
@@ -741,10 +812,10 @@
         if (isFirstRound) {
           finished = true;
           dateDiv.innerHTML = `
-      <button onclick="isFirstRound=false; newRound();" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-black text-xl font-bold rounded-xl transition shadow-lg transform hover:scale-105 select-none">
-        Start Session
-      </button>
-    `;
+            <button onclick="isFirstRound=false; newRound();" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-black text-xl font-bold rounded-xl transition shadow-lg transform hover:scale-105 select-none">
+              Start Session
+            </button>
+          `;
           timerDiv.textContent = "Press Space, Enter, or Click to Start";
           return;
         }
@@ -1072,7 +1143,11 @@
           return;
         }
 
-        if (e.key === "h" || e.key === "H") {
+        if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) {
+          return;
+        }
+
+        if (e.key === "c" || e.key === "C") {
           showExplanationExplicitly = !showExplanationExplicitly;
           updateExplanationVisibility();
           return;
@@ -1115,6 +1190,7 @@
           }
         }
       });
+
       createButtons();
       initFormatDropdowns();
       newRound();
